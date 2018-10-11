@@ -1,5 +1,5 @@
 <?php
-
+namespace PHPDui;
 class MyTools
 {
     public static function GetColorR($color)

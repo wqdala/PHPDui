@@ -1,5 +1,5 @@
 <?php
-
+namespace PHPDui;
 require_once "Container.php";
 require_once 'HorizontalLayout.php';
 require_once 'VerticalLayout.php';

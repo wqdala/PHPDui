@@ -1,5 +1,6 @@
 <?php
 require_once "../lib/Canvas.php";
+use PHPDui\Canvas;
 function generateImg()
 {
     $data = array();

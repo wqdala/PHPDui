@@ -1,5 +1,5 @@
 <?php
-
+namespace PHPDui;
 include_once 'Control.php';
     /**
      * CircleImage

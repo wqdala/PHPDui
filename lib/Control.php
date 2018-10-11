@@ -1,4 +1,5 @@
 <?php
+namespace PHPDui;
 include_once 'MyTools.php';
 class Control
 {
