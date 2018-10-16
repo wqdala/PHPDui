@@ -11,6 +11,7 @@
 - **isBinary** 背景图片是否是二进制流 (默认 false 例如 false)
 ## Label
 **extends** Control 
+
 **说明**: 文本控件,可以展示文本信息
 - **text** 文本内容 (默认 "" 例如 "你好，你好")
 - **fontFile** 字体文件 (默认 当前文件里面的temp.ttf文件，具体需要自己配置 例如 "./temp.ttf")
@@ -24,17 +25,21 @@
 - **endellipsis** 文本超出边界时 使用...代替 (默认 false  例如 true)
 ## CircleImage
 **extends** Control 
+
 **说明**: 圆形图片,可以展示圆形的图片 用于显示头像等元素
 - **alphaColor** 将控件中某一颜色值设置为透明色 (默认 0xFFFFFF例如 0xFFAAAA)
 
 --- 
 ## Container
 **extends** Control 
+
 **说明**: 基本布局控件,包含基本布局操作 (该布局下所有控件会依次绘制在当前控件区域内)
 ## HorizontalLayout
 **extends** Container
+
 **说明**: 横向布局  (该布局下所有控件会从左向右依次排列)
 ## VerticalLayout
 **extends** Container
+
 **说明**: 纵向布局 (该布局下所有控件会从上向下依次排列)
 
