@@ -9,7 +9,7 @@ class Label extends Control
     //文本
     protected $m_text = '';
     protected $m_fontSize = 20;
-    protected $m_fontFile = 'res/simhei.ttf';
+    protected $m_fontFile = '';
     protected $m_fontColor = 0;
     protected $m_textPadding = array(
         'u' => 0,
@@ -27,6 +27,8 @@ class Label extends Control
     public function __construct()
     {
         # code...
+        $this->m_fontFile = __DIR__."/temp.ttf";
+
     }
 
     public function SetTextPadding($textPadding)
