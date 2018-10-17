@@ -9,7 +9,7 @@ class HorizontalLayout extends Container
 
     public function __construct()
     {
-        # code...
+        parent::__construct();
     }
 
     public function SetPos($rc)

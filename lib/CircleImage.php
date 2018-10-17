@@ -9,7 +9,7 @@ class CircleImage extends Control
     protected $m_alphaColor = 0xFFFFFF;
     public function __construct()
     {
-        # code...
+        parent::__construct();
     }
 
     public function SetAlphaColor($color)

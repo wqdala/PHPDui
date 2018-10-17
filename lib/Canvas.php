@@ -100,7 +100,7 @@ class Canvas
         }
     }
 
-    private function createControl($name)
+    protected function createControl($name)
     {
         switch ($name) {
             case 'Container':
@@ -122,7 +122,6 @@ class Canvas
                 return new Label;
                 break;
             default:
-            echo "unexpect control name";
                 # code...
                 break;
         }

@@ -26,7 +26,7 @@ class Label extends Control
 
     public function __construct()
     {
-        # code...
+        parent::__construct();
         $this->m_fontFile = __DIR__."/temp.ttf";
 
     }
