@@ -224,8 +224,12 @@ class Control
                 case 3:
                     return imagecreatefrompng($fileUrl);
                     break;
-                case 6:
-                    return imagecreatefrombmp($fileUrl);
+            case 6:
+                    if(version_compare(PHP_VERSION, "7",">=")){
+                        return imagecreatefrombmp($fileUrl);
+                    }else{
+                        return $this->myimagecreatefrombmp($fileUrl);
+                    }
                     break;
                 
                 default:
@@ -237,4 +241,225 @@ class Control
         return imageCreatetruecolor(100,100);
     }
 
+    private function myimagecreatefrombmp($fileUrl)
+    {
+        $f=fopen($fileUrl,"r");
+        $Header=fread($f,2);
+
+        if($Header=="BM")
+        {
+            $Size=$this->freaddword($f);
+            $Reserved1=$this->freadword($f);
+            $Reserved2=$this->freadword($f);
+            $FirstByteOfImage=$this->freaddword($f);
+
+            $SizeBITMAPINFOHEADER=$this->freaddword($f);
+            $Width=$this->freaddword($f);
+            $Height=$this->freaddword($f);
+            $biPlanes=$this->freadword($f);
+            $biBitCount=$this->freadword($f);
+            $RLECompression=$this->freaddword($f);
+            $WidthxHeight=$this->freaddword($f);
+            $biXPelsPerMeter=$this->freaddword($f);
+            $biYPelsPerMeter=$this->freaddword($f);
+            $NumberOfPalettesUsed=$this->freaddword($f);
+            $NumberOfImportantColors=$this->freaddword($f);
+
+            if($biBitCount<24)
+            {
+                $img=imagecreate($Width,$Height);
+                $Colors=pow(2,$biBitCount);
+                for($p=0;$p<$Colors;$p++)
+                {
+                    $B=$this->freadbyte($f);
+                    $G=$this->freadbyte($f);
+                    $R=$this->freadbyte($f);
+                    $Reserved=$this->freadbyte($f);
+                    $Palette[]=imagecolorallocate($img,$R,$G,$B);
+                }
+
+                if($RLECompression==0)
+                {
+                    $Zbytek=(4-ceil(($Width/(8/$biBitCount)))%4)%4;
+
+                    for($y=$Height-1;$y>=0;$y--)
+                    {
+                        $CurrentBit=0;
+                        for($x=0;$x<$Width;$x++)
+                        {
+                            $C=freadbits($f,$biBitCount);
+                            imagesetpixel($img,$x,$y,$Palette[$C]);
+                        }
+                        if($CurrentBit!=0) {$this->freadbyte($f);}
+                        for($g=0;$g<$Zbytek;$g++)
+                        $this->freadbyte($f);
+                    }
+
+                }
+            }
+            if($RLECompression==1) //$BI_RLE8
+            {
+                $y=$Height;
+
+                $pocetb=0;
+
+                while(true)
+                {
+                    $y--;
+                    $prefix=$this->freadbyte($f);
+                    $suffix=$this->freadbyte($f);
+                    $pocetb+=2;
+
+                    $echoit=false;
+
+                    if($echoit)echo "Prefix: $prefix Suffix: $suffix<BR>";
+                    if(($prefix==0)and($suffix==1)) break;
+                    if(feof($f)) break;
+
+                    while(!(($prefix==0)and($suffix==0)))
+                    {
+                        if($prefix==0)
+                        {
+                            $pocet=$suffix;
+                            $Data.=fread($f,$pocet);
+                            $pocetb+=$pocet;
+                            if($pocetb%2==1) {$this->freadbyte($f); $pocetb++;}
+                        }
+                        if($prefix>0)
+                        {
+                            $pocet=$prefix;
+                            for($r=0;$r<$pocet;$r++)
+                            $Data.=chr($suffix);
+                        }
+                        $prefix=$this->freadbyte($f);
+                        $suffix=$this->freadbyte($f);
+                        $pocetb+=2;
+                        if($echoit) echo "Prefix: $prefix Suffix: $suffix<BR>";
+                    }
+
+                    for($x=0;$x<strlen($Data);$x++)
+                    {
+                        imagesetpixel($img,$x,$y,$Palette[ord($Data[$x])]);
+                    }
+                    $Data="";
+
+                }
+
+            }
+
+
+            if($RLECompression==2) //$BI_RLE4
+            {
+                $y=$Height;
+                $pocetb=0;
+
+                while(true)
+                {
+                    //break;
+                    $y--;
+                    $prefix=$this->freadbyte($f);
+                    $suffix=$this->freadbyte($f);
+                    $pocetb+=2;
+
+                    $echoit=false;
+
+                    if($echoit)echo "Prefix: $prefix Suffix: $suffix<BR>";
+                    if(($prefix==0)and($suffix==1)) break;
+                    if(feof($f)) break;
+
+                    while(!(($prefix==0)and($suffix==0)))
+                    {
+                        if($prefix==0)
+                        {
+                            $pocet=$suffix;
+
+                            $CurrentBit=0;
+                            for($h=0;$h<$pocet;$h++)
+                            $Data.=chr(freadbits($f,4));
+                            if($CurrentBit!=0) freadbits($f,4);
+                            $pocetb+=ceil(($pocet/2));
+                            if($pocetb%2==1) {$this->freadbyte($f); $pocetb++;}
+                        }
+                        if($prefix>0)
+                        {
+                            $pocet=$prefix;
+                            $i=0;
+                            for($r=0;$r<$pocet;$r++)
+                            {
+                                if($i%2==0)
+                                {
+                                    $Data.=chr($suffix%16);
+                                }
+                                else
+                                {
+                                    $Data.=chr(floor($suffix/16));
+                                }
+                                $i++;
+                            }
+                        }
+                        $prefix=$this->freadbyte($f);
+                        $suffix=$this->freadbyte($f);
+                        $pocetb+=2;
+                        if($echoit) echo "Prefix: $prefix Suffix: $suffix<BR>";
+                    }
+
+                    for($x=0;$x<strlen($Data);$x++)
+                    {
+                        imagesetpixel($img,$x,$y,$Palette[ord($Data[$x])]);
+                    }
+                    $Data="";
+
+                }
+
+            }
+
+
+            if($biBitCount==24)
+            {
+                $img=imagecreatetruecolor($Width,$Height);
+                $Zbytek=$Width%4;
+
+                for($y=$Height-1;$y>=0;$y--)
+                {
+                    for($x=0;$x<$Width;$x++)
+                    {
+                        $B=$this->freadbyte($f);
+                        $G=$this->freadbyte($f);
+                        $R=$this->freadbyte($f);
+                        $color=imagecolorexact($img,$R,$G,$B);
+                        if($color==-1) $color=imagecolorallocate($img,$R,$G,$B);
+                        imagesetpixel($img,$x,$y,$color);
+                    }
+                    for($z=0;$z<$Zbytek;$z++)
+                    $this->freadbyte($f);
+                }
+            }
+
+            return $img;
+
+        }
+
+
+    fclose($f);
+
+    }
+
+    private function freadbyte($f)
+    {
+        return ord(fread($f,1));
+    }
+
+    private function freadword($f)
+    {
+        $b1=$this->freadbyte($f);
+        $b2=$this->freadbyte($f);
+        return $b2*256+$b1;
+    }
+
+    private function freaddword($f)
+    {
+        $b1=$this->freadword($f);
+        $b2=$this->freadword($f);
+        return $b2*65536+$b1;
+    }
 }

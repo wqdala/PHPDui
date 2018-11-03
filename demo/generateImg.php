@@ -13,7 +13,7 @@ function generateImg()
                 array(
                     'name' => 'CircleImage',
                     'attribute' => array(
-                        'bkImage' => 'http://dala.work/public/temp.jpg',
+                        'bkImage' => 'http://dala.work/public/ha.bmp',
                         'padding' => '10,10,10,10',
                         'alphaColor' => 0xfe1c5c,
                     ),
