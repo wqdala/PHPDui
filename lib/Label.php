@@ -63,7 +63,7 @@ class Label extends Control
 
     public function SetFontSize($fontSize)
     {
-        $this->m_fontSize = $fontSize;
+        $this->m_fontSize = $fontSize * 72 / 96;
     }
 
     public function SetAutoCalcWidth($autoCalcWidth)
@@ -146,8 +146,8 @@ class Label extends Control
         if($this->m_bAutoCalcWidth || $this->m_bAutoCalcHeight){
             $text = $this->autowrap($this->m_fontSize,0,$this->m_fontFile,$this->m_text,$availableRect['w']);
             $textBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, $text);
-            $textWidth = $textBox[2];
-            $textHeight = abs($textBox[5]);
+            $textWidth = $textBox[2]; - $textBox[0];
+            $textHeight = $textBox[3] - $textBox[5];
             if($this->m_bAutoCalcWidth){
                 $size['w'] = $textWidth + $this->m_rectPadding['l'] + $this->m_rectPadding['r'];
             }
@@ -175,10 +175,15 @@ class Label extends Control
             }
 
             // $text = $this->m_text;
+            $singleBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, '1');
+            $singleHeight = $singleBox[3] - $singleBox[5];
             $textBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, $text);
-            $textWidth = $textBox[2];
-            $textHeight = abs($textBox[5]);
-            
+            $textWidth = $textBox[2]; - $textBox[0];
+            $textHeight = $textBox[3] - $textBox[5];
+            // echo $textWidth;
+            // echo ' -> ';
+            // echo $textHeight;
+            // echo '</br>';
             $textPosX = 0;
             $textPosY = 0;
             switch ($this->m_align) {
@@ -200,21 +205,21 @@ class Label extends Control
 
             switch ($this->m_valign) {
                 case 'top':
-                    $textPosY = $textRect['y'] + $textHeight;
+                    $textPosY = $textRect['y'] + $singleHeight;
                     break;
                 case 'bottom':
-                    $textPosY = $textRect['h'] + $textRect['y'];
+                    $textPosY = $textRect['y'] + $singleHeight - $textHeight;
                     break;
                 case 'center':
-                    $textPosY = ($textRect['h'] - $textHeight) / 2 + $textHeight + $textRect['y'];
+                    $textPosY = ($textRect['h'] - $textHeight) / 2 + $textRect['y'] + $singleHeight;
                     break;
                 
                 default:
-                    $textPosY = $textRect['y'] + $textHeight;
+                    $textPosY = $textRect['y'] + $singleHeight;
                     break;
             }
 
-            imagettftext($desImg,$this->m_fontSize,0,$textPosX - 1,$textPosY - 1,$fontColor,$this->m_fontFile,$text);
+            imagettftext($desImg,$this->m_fontSize,0,$textPosX,$textPosY,$fontColor,$this->m_fontFile,$text);
         }
     }
 
@@ -230,9 +235,9 @@ class Label extends Control
 
         foreach ($letter as $l) {
             $teststr = $content.$l;
-            $testbox = imagettfbbox($fontsize, $angle, $fontFile, $teststr);
+            $textBox = imagettfbbox($fontsize, $angle, $fontFile, $teststr);
             // 判断拼接后的字符串是否超过预设的宽度
-            if (($testbox[2] > $width) && ($content !== "")) {
+            if (($textBox[2] - $textBox[0] > $width) && ($content !== "")) {
                 $content = mb_substr($content, 0,-1);
                 $content .= '...';
                 break;
@@ -266,22 +271,27 @@ class Label extends Control
 
     private function autowrap($fontsize, $angle, $fontFile, $text, $width)
     {
+        mb_internal_encoding("UTF-8");
         $content = "";
 
          // 将字符串拆分成一个个单字 保存到数组 letter 中
         for($i=0; $i < mb_strlen($text); $i++) {
             $letter[] = mb_substr($text, $i, 1);
         }
-
+        $increaseStr = "";
         foreach ($letter as $l) {
-            $teststr = $content.$l;
-            $testbox = imagettfbbox($fontsize, $angle, $fontFile, $teststr);
+            $teststr = $increaseStr.$l;
+
+            $textBox = imagettfbbox($fontsize, $angle, $fontFile, $teststr);
+            $textWidth = $textBox[2] - $textBox[0];
             // 判断拼接后的字符串是否超过预设的宽度
-            if (($testbox[2] > $width) && ($content !== "")) {
-                $content .= "\n";
+            if (( $textWidth > $width) && ($increaseStr !== "")) {
+                $content .=$increaseStr. "\n";
+                $increaseStr = "";
             }
-            $content .= $l;
+            $increaseStr .= $l;
         }
+        $content .= $increaseStr;
         return $content;
     }
 
