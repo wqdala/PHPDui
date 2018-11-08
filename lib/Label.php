@@ -146,7 +146,7 @@ class Label extends Control
         if($this->m_bAutoCalcWidth || $this->m_bAutoCalcHeight){
             $text = $this->autowrap($this->m_fontSize,0,$this->m_fontFile,$this->m_text,$availableRect['w']);
             $textBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, $text);
-            $textWidth = $textBox[2]; - $textBox[0];
+            $textWidth = $textBox[2] - $textBox[0];
             $textHeight = $textBox[3] - $textBox[5];
             if($this->m_bAutoCalcWidth){
                 $size['w'] = $textWidth + $this->m_rectPadding['l'] + $this->m_rectPadding['r'];
@@ -178,7 +178,7 @@ class Label extends Control
             $singleBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, '1');
             $singleHeight = $singleBox[3] - $singleBox[5];
             $textBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, $text);
-            $textWidth = $textBox[2]; - $textBox[0];
+            $textWidth = $textBox[2] - $textBox[0];
             $textHeight = $textBox[3] - $textBox[5];
             // echo $textWidth;
             // echo ' -> ';
@@ -248,7 +248,7 @@ class Label extends Control
     }
 
 
-    private function getTextPaintRect()
+    protected function getTextPaintRect()
     {
         if(empty($this->m_textPadding)){
             return $this->getPaintRect();
