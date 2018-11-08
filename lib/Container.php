@@ -35,9 +35,9 @@ class Container extends Control
         }else{
             $subRect = array(
                 'x' => $this->m_rectItem['x'] + $this->m_rectPadding['l'],
-                'y' => $this->m_rectItem['y'] + $this->m_rectPadding['u'],
+                'y' => $this->m_rectItem['y'] + $this->m_rectPadding['t'],
                 'w' => $this->m_rectItem['w'] - $this->m_rectPadding['l'] - $this->m_rectPadding['r'],
-                'h' => $this->m_rectItem['h'] - $this->m_rectPadding['u'] - $this->m_rectPadding['d'],
+                'h' => $this->m_rectItem['h'] - $this->m_rectPadding['t'] - $this->m_rectPadding['b'],
             );
         }
         foreach ($this->m_items as $value) {

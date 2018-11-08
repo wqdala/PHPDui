@@ -10,12 +10,12 @@ class Control
     protected $m_width = 0;
     protected $m_height = 0;
     protected $m_rectPadding = array(
-        'u' => 0,
-        'd' => 0,
+        't' => 0,
+        'b' => 0,
         'l' => 0,
         'r' => 0,
 
-    ); // u d l r
+    ); // t b l r
 
     //背景颜色
     protected $m_bkColor = -1;
@@ -101,9 +101,9 @@ class Control
             $paddingArr = explode(',', $data['padding']);
             $padding = array(
                 'l' => $paddingArr[0],
-                'u' => $paddingArr[1],
+                't' => $paddingArr[1],
                 'r' => $paddingArr[2],
-                'd' => $paddingArr[3],
+                'b' => $paddingArr[3],
 
             );
             $this->SetPadding($padding);
@@ -201,9 +201,9 @@ class Control
         }else{
             $paintRect = array(
                 'x' => $this->m_rectItem['x'] + $this->m_rectPadding['l'],
-                'y' => $this->m_rectItem['y'] + $this->m_rectPadding['u'],
+                'y' => $this->m_rectItem['y'] + $this->m_rectPadding['t'],
                 'w' => $this->m_rectItem['w'] - $this->m_rectPadding['l'] - $this->m_rectPadding['r'],
-                'h' => $this->m_rectItem['h'] - $this->m_rectPadding['u'] - $this->m_rectPadding['d'],
+                'h' => $this->m_rectItem['h'] - $this->m_rectPadding['t'] - $this->m_rectPadding['b'],
             );
         return $paintRect;
         }

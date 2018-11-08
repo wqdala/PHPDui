@@ -12,14 +12,15 @@ class Label extends Control
     protected $m_fontFile = '';
     protected $m_fontColor = 0;
     protected $m_textPadding = array(
-        'u' => 0,
-        'd' => 0,
+        't' => 0,
+        'b' => 0,
         'l' => 0,
         'r' => 0,
 
     );// u d l r
     protected $m_align = 'left';
     protected $m_valign = 'center';
+    protected $m_lineSpace = 20;
     protected $m_endEllipsis = false;
     protected $m_bAutoCalcWidth = false;
     protected $m_bAutoCalcHeight = false;
@@ -44,6 +45,11 @@ class Label extends Control
     public function setValign($valign)
     {
         $this->m_valign = $valign;
+    }
+
+    public function setLineSpace($lineSpace)
+    {
+        $this->m_lineSpace = $lineSpace;
     }
 
     public function SetText($text)
@@ -102,13 +108,17 @@ class Label extends Control
             $this->SetFontSize($data['fontSize']);
         }
 
+        if(array_key_exists('lineSpace', $data)){
+            $this->setLineSpace($data['lineSpace']);
+        }
+
         if(array_key_exists('textPadding', $data)){
             $paddingArr = explode(',', $data['textPadding']);
             $padding = array(
                 'l' => $paddingArr[0],
-                'u' => $paddingArr[1],
+                't' => $paddingArr[1],
                 'r' => $paddingArr[2],
-                'd' => $paddingArr[3],
+                'b' => $paddingArr[3],
 
             );
             $this->SetTextPadding($padding);
@@ -174,57 +184,67 @@ class Label extends Control
                 $text = $this->toEndEllipsis($this->m_fontSize,0,$this->m_fontFile,$this->m_text,$textRect['w']);
             }
 
-            // $text = $this->m_text;
+            $textArr = explode("\n", $text);
+            $basePosX = $textRect['x'];
+            $basePosY = $textRect['y'];
+
             $singleBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, '1');
             $singleHeight = $singleBox[3] - $singleBox[5];
-            $textBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, $text);
-            $textWidth = $textBox[2] - $textBox[0];
-            $textHeight = $textBox[3] - $textBox[5];
-            // echo $textWidth;
-            // echo ' -> ';
-            // echo $textHeight;
-            // echo '</br>';
-            $textPosX = 0;
-            $textPosY = 0;
-            switch ($this->m_align) {
-                case 'left':
-                    $textPosX = $textRect['x'];
-                    break;
 
-                case 'right':
-                    $textPosX = ($textRect['w'] - $textWidth) + $textRect['x'];
-                    break;
+            $textHeight = count($textArr) * ($singleHeight + $this->m_lineSpace) - $this->m_lineSpace;
 
-                case 'center':
-                    $textPosX = ($textRect['w'] - $textWidth) / 2 + $textRect['x'];
-                    break;
-                default:
-                    $textPosX = $textRect['x'];
-                    break;
-            }
 
             switch ($this->m_valign) {
                 case 'top':
-                    $textPosY = $textRect['y'] + $singleHeight;
+                    $basePosY = $textRect['y'];
                     break;
                 case 'bottom':
-                    $textPosY = $textRect['y'] + $singleHeight - $textHeight;
+                    $basePosY = $textRect['y'] +  $textRect['h'] - $textHeight;
                     break;
                 case 'center':
-                    $textPosY = ($textRect['h'] - $textHeight) / 2 + $textRect['y'] + $singleHeight;
+                    $basePosY = ($textRect['h'] - $textHeight) / 2 + $textRect['y'];
                     break;
                 
                 default:
-                    $textPosY = $textRect['y'] + $singleHeight;
+                    $basePosY = $textRect['y'];
                     break;
             }
+            $basePosY += $singleHeight; //下移一个单字距离 因为gd 绘制的时候在指定位置上面绘制
+            foreach ($textArr as $itemText) {
+                $itemTextBox = imagettfbbox($this->m_fontSize, 0, $this->m_fontFile, $itemText);
+                $itemTextWidth = $itemTextBox[2] - $itemTextBox[0];
+                $itemTextHeight = $itemTextBox[3] - $itemTextBox[5];
 
-            imagettftext($desImg,$this->m_fontSize,0,$textPosX,$textPosY,$fontColor,$this->m_fontFile,$text);
+                switch ($this->m_align) {
+                    case 'left':
+                        $textPosX = $basePosX;
+                        break;
+
+                    case 'right':
+                        $textPosX = ($textRect['w'] - $itemTextWidth) + $basePosX;
+                        break;
+
+                    case 'center':
+                        $textPosX = ($textRect['w'] - $itemTextWidth) / 2 + $basePosX;
+                        break;
+                    default:
+                        $textPosX = $basePosX;
+                        break;
+                }
+
+                $textPosY = $basePosY;
+
+                imagettftext($desImg,$this->m_fontSize,0,$textPosX,$textPosY,$this->m_fontColor,$this->m_fontFile,$itemText);
+                $basePosY += $this->m_lineSpace;
+                $basePosY += $itemTextHeight;
+
+
+            }
         }
     }
 
 
-    private function toEndEllipsis($fontsize, $angle, $fontFile, $text, $width)
+    protected function toEndEllipsis($fontsize, $angle, $fontFile, $text, $width)
     {
         $content = "";
 
@@ -256,20 +276,20 @@ class Label extends Control
             $paintRect = $this->getPaintRect();
             $textPaddingRect = array(
                 'x' => $paintRect['x'] + $this->m_textPadding['l'],
-                'y' => $paintRect['y'] + $this->m_textPadding['u'],
+                'y' => $paintRect['y'] + $this->m_textPadding['t'],
                 'w' => $paintRect['w'] - $this->m_textPadding['l'] - $this->m_textPadding['r'],
-                'h' => $paintRect['h'] - $this->m_textPadding['u'] - $this->m_textPadding['d'],
+                'h' => $paintRect['h'] - $this->m_textPadding['t'] - $this->m_textPadding['b'],
             );
             return $textPaddingRect;
         }
     }
 
-    private function createFontColor(&$desImg)
+    protected function createFontColor(&$desImg)
     {
         return imagecolorallocate($desImg,MyTools::GetColorR($this->m_fontColor),MyTools::GetColorG($this->m_fontColor),MyTools::GetColorB($this->m_fontColor));
     }
 
-    private function autowrap($fontsize, $angle, $fontFile, $text, $width)
+    protected function autowrap($fontsize, $angle, $fontFile, $text, $width)
     {
         mb_internal_encoding("UTF-8");
         $content = "";

@@ -5,7 +5,7 @@ require_once 'HorizontalLayout.php';
 require_once 'VerticalLayout.php';
 require_once 'CircleImage.php';
 require_once 'Label.php';
-
+require_once 'MultiLabel.php';
 define('PNG', 1);
 define('JPEG', 2);
 define('BMP', 3);
@@ -120,6 +120,9 @@ class Canvas
                 break;
             case 'Label':
                 return new Label;
+                break;
+            case 'MultiLabel':
+                return new MultiLabel;
                 break;
             default:
                 # code...
