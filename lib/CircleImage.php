@@ -6,24 +6,10 @@ include_once 'Control.php';
      */
 class CircleImage extends Control
 {
-    protected $m_alphaColor = 0xFFFFFF;
     public function __construct()
     {
         parent::__construct();
-    }
-
-    public function SetAlphaColor($color)
-    {
-        $this->m_alphaColor = $color;
-    }
-
-    public function SetAttribute(&$data)
-    {
-        parent::SetAttribute($data);
-        //padding
-        if(array_key_exists('alphaColor', $data)){
-            $this->SetAlphaColor($data['alphaColor']);
-        }
+        $this->m_alphaColor = 0xFFFFFF;
     }
 
     public function DoPaint(&$desImg,$paintRc)

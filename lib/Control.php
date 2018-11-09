@@ -25,11 +25,16 @@ class Control
     protected $m_isBinary = false;
     protected $m_bkImageSrcRect = array(
     );
+    protected $m_alphaColor = -1;
 
     function __construct()
     {
     }
 
+    public function SetAlphaColor($color)
+    {
+        $this->m_alphaColor = $color;
+    }
     public function SetWidth($width)
     {
         $this->m_width = $width;
@@ -141,7 +146,9 @@ class Control
             $this->SetIsBinary($data['isBinary']);
         }
 
-
+        if(array_key_exists('alphaColor', $data)){
+            $this->SetAlphaColor($data['alphaColor']);
+        }
 
     }
 
@@ -188,8 +195,21 @@ class Control
                 $imageSrcRect['w'] = imagesx($bkImage);
                 $imageSrcRect['h'] = imagesy($bkImage);
             }
-            imagecopyresampled($desImg, $bkImage, $paintRect['x'], $paintRect['y'], $imageSrcRect['x'], $imageSrcRect['y'],
-                $paintRect['w'], $paintRect['h'], $imageSrcRect['w'], $imageSrcRect['h']);
+            if($this->m_alphaColor != -1){
+                $tempImg = imageCreatetruecolor($paintRect['w'],$paintRect['h']);
+                imagecopyresampled($tempImg, $bkImage, 0, 0, $imageSrcRect['x'], $imageSrcRect['y'], 
+                    $paintRect['w'], $paintRect['h'], $imageSrcRect['w'], $imageSrcRect['h']);
+                imagecolortransparent($tempImg,$this->m_alphaColor);
+                // imagecopymerge(dst_im, src_im, dst_x, dst_y, src_x, src_y, src_w, src_h, pct)
+                imagecopymerge($desImg, $tempImg, $paintRect['x'], $paintRect['y'], 0, 0,
+                 $paintRect['w'], $paintRect['h'], 100);
+
+            }else{
+                imagecopyresampled($desImg, $bkImage, $paintRect['x'], $paintRect['y'], $imageSrcRect['x'], $imageSrcRect['y'],
+                    $paintRect['w'], $paintRect['h'], $imageSrcRect['w'], $imageSrcRect['h']);
+            }
+
+            
         }
 
     }
