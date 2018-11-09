@@ -307,7 +307,7 @@ class Control
                         $CurrentBit=0;
                         for($x=0;$x<$Width;$x++)
                         {
-                            $C=freadbits($f,$biBitCount);
+                            $C=fread($f,$biBitCount);
                             imagesetpixel($img,$x,$y,$Palette[$C]);
                         }
                         if($CurrentBit!=0) {$this->freadbyte($f);}
@@ -395,8 +395,8 @@ class Control
 
                             $CurrentBit=0;
                             for($h=0;$h<$pocet;$h++)
-                            $Data.=chr(freadbits($f,4));
-                            if($CurrentBit!=0) freadbits($f,4);
+                            $Data.=chr(fread($f,4));
+                            if($CurrentBit!=0) fread($f,4);
                             $pocetb+=ceil(($pocet/2));
                             if($pocetb%2==1) {$this->freadbyte($f); $pocetb++;}
                         }
